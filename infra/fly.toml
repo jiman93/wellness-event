@@ -1,0 +1,46 @@
+# Fly.io configuration for Wellness Event Platform
+app = "wellness-event-platform"
+primary_region = "iad"
+
+[build]
+dockerfile = "infra/Dockerfile.client"
+
+[env]
+NODE_ENV = "production"
+# These will be set via fly secrets
+# MONGODB_URI = "mongodb://admin:password@localhost:27017/wellness-events?authSource=admin"
+# CLIENT_URL = "https://wellness-event-platform.fly.dev"
+
+# Main service (Nginx serving React app and proxying API)
+[[services]]
+internal_port = 80
+protocol = "tcp"
+
+[[services.ports]]
+port = 80
+handlers = ["http"]
+force_https = true
+
+[[services.ports]]
+port = 443
+handlers = ["tls", "http"]
+
+[services.concurrency]
+type = "connections"
+hard_limit = 25
+soft_limit = 20
+
+[[services.http_checks]]
+interval = "15s"
+timeout = "2s"
+grace_period = "1s"
+method = "GET"
+path = "/health"
+protocol = "http"
+tls_skip_verify = false
+restart_limit = 0
+
+# MongoDB volume for persistence
+[[mounts]]
+source = "wellness_mongo_data"
+destination = "/data/db"
