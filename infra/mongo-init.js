@@ -7,7 +7,7 @@ db.createCollection("events");
 // Insert sample events
 db.events.insertMany([
   {
-    title: "Mindful Meditation Workshop 2",
+    title: "Mindful Meditation Workshop 3",
     description:
       "Join us for a peaceful meditation session to reduce stress and improve mental clarity.",
     date: new Date("2024-02-15"),
