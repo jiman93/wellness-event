@@ -145,13 +145,18 @@ export function LoginPage({ onLogin, isLoading = false, error }: LoginPageProps)
               <h3 className="text-sm font-medium text-sky-900 mb-2">Demo Credentials:</h3>
               <div className="text-xs text-sky-700 space-y-1">
                 <p>
-                  <strong>HR User:</strong> john.smith@company.com
+                  <strong>HR Users:</strong>
                 </p>
+                <p>• john.smith@company.com (TechCorp Inc.)</p>
+                <p>• sarah.johnson@company.com (TechCorp Inc.)</p>
                 <p>
-                  <strong>Vendor:</strong> mike.chen@yogastudio.com
+                  <strong>Vendor Users:</strong>
                 </p>
+                <p>• mike.chen@yogastudio.com (Yoga)</p>
+                <p>• lisa.garcia@meditation.com (Meditation)</p>
+                <p>• david.wilson@nutrition.com (Nutrition)</p>
                 <p>
-                  <strong>Password:</strong> password123
+                  <strong>Password:</strong> password123 (for all users)
                 </p>
               </div>
             </div>

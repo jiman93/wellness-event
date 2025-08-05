@@ -29,7 +29,7 @@ db.users.insertMany([
     email: "sarah.johnson@company.com",
     passwordHash: "$2b$10$3BBDrvp17wFVuvtERKaLwuAdZcvApTRy3hSH3rHyYEraqEFrQ8luq",
     role: "hr",
-    companyName: "Wellness Solutions Ltd.",
+    companyName: "TechCorp Inc.",
     createdAt: new Date(),
     updatedAt: new Date(),
   },
