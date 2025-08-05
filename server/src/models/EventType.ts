@@ -11,4 +11,4 @@ const EventTypeSchema = new Schema<IEventType>(
   { timestamps: true }
 );
 
-export default mongoose.model<IEventType>("EventType", EventTypeSchema);
+export default mongoose.model<IEventType>("EventType", EventTypeSchema, "eventtypes");

@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 import { connectDB } from "./config/database";
 import authRoutes from "./routes/auth";
 import eventTypeRoutes from "./routes/eventTypes";
+import vendorRoutes from "./routes/vendors";
 import wellnessEventRoutes from "./routes/wellnessEvents";
 import { errorHandler, notFound } from "./middleware/errorHandler";
 
@@ -32,6 +33,7 @@ app.get("/health", (_req, res) => res.json({ status: "ok" }));
 // Routes
 app.use("/auth", authRoutes);
 app.use("/event-types", eventTypeRoutes);
+app.use("/vendors", vendorRoutes);
 app.use("/wellness-events", wellnessEventRoutes);
 
 // Error handlers

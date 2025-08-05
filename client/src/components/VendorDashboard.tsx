@@ -7,15 +7,15 @@ import { EventDetailModal } from "./EventDetailModal";
 
 interface WellnessEvent {
   _id: string;
-  eventType: {
+  eventType?: {
     name: string;
   };
-  hr: {
+  hr?: {
     name: string;
     email: string;
     companyName: string;
   };
-  vendor: {
+  vendor?: {
     name: string;
     email: string;
   };
@@ -202,14 +202,16 @@ export function VendorDashboard() {
                   {events.map((event: WellnessEvent) => (
                     <tr key={event._id} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-4 px-4">
-                        <div className="font-medium text-gray-900">{event.eventType.name}</div>
+                        <div className="font-medium text-gray-900">
+                          {event.eventType?.name || "Unknown Event Type"}
+                        </div>
                       </td>
                       <td className="py-4 px-4">
-                        <div className="text-gray-900">{event.hr.name}</div>
-                        <div className="text-sm text-gray-500">{event.hr.email}</div>
+                        <div className="text-gray-900">{event.hr?.name || "Unknown HR"}</div>
+                        <div className="text-sm text-gray-500">{event.hr?.email || "No email"}</div>
                         <div className="flex items-center gap-1 text-xs text-gray-400 mt-1">
                           <Building className="w-3 h-3" />
-                          {event.hr.companyName}
+                          {event.hr?.companyName || "Unknown Company"}
                         </div>
                       </td>
                       <td className="py-4 px-4">

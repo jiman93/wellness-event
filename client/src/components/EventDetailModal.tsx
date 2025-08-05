@@ -5,14 +5,14 @@ import { useAuth } from "../contexts/AuthContext";
 
 interface WellnessEvent {
   _id: string;
-  eventType: {
+  eventType?: {
     name: string;
   };
-  vendor: {
+  vendor?: {
     name: string;
     email: string;
   };
-  hr: {
+  hr?: {
     name: string;
     email: string;
     companyName: string;
@@ -133,7 +133,9 @@ export function EventDetailModal({
         <div className="p-6 space-y-6">
           {/* Event Type */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">{event.eventType.name}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              {event.eventType?.name || "Unknown Event Type"}
+            </h3>
             <span
               className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(
                 event.status
@@ -151,15 +153,17 @@ export function EventDetailModal({
                 <User className="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>
                   <p className="font-medium text-gray-900">
-                    {isVendor ? event.hr.name : event.vendor.name}
+                    {isVendor
+                      ? event.hr?.name || "Unknown HR"
+                      : event.vendor?.name || "Unknown Vendor"}
                   </p>
                   <p className="text-sm text-gray-600">
-                    {isVendor ? event.hr.email : event.vendor.email}
+                    {isVendor ? event.hr?.email || "No email" : event.vendor?.email || "No email"}
                   </p>
                   {isVendor && (
                     <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
                       <Building className="w-4 h-4" />
-                      {event.hr.companyName}
+                      {event.hr?.companyName || "Unknown Company"}
                     </div>
                   )}
                 </div>
@@ -176,7 +180,7 @@ export function EventDetailModal({
             </div>
 
             {/* Right Column */}
-            <div className="space-y-4"> 
+            <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
                 <div>

@@ -2,20 +2,21 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Eye, Calendar, Clock } from "lucide-react";
+import { Eye, Calendar, Clock, Plus } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { EventDetailModal } from "./EventDetailModal";
+import { CreateEventModal } from "./CreateEventModal";
 
 interface WellnessEvent {
   _id: string;
-  eventType: {
+  eventType?: {
     name: string;
   };
-  vendor: {
+  vendor?: {
     name: string;
     email: string;
   };
-  hr: {
+  hr?: {
     name: string;
     email: string;
     companyName: string;
@@ -35,6 +36,7 @@ export function HRDashboard() {
   const { user } = useAuth();
   const [selectedEvent, setSelectedEvent] = useState<WellnessEvent | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const {
     data: events,
@@ -116,8 +118,21 @@ export function HRDashboard() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Company HR Dashboard</h1>
-        <p className="text-gray-600">Manage and track wellness events for {user?.companyName}</p>
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Company HR Dashboard</h1>
+            <p className="text-gray-600">
+              Manage and track wellness events for {user?.companyName}
+            </p>
+          </div>
+          <Button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create Event
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -147,11 +162,17 @@ export function HRDashboard() {
                   {events.map((event: WellnessEvent) => (
                     <tr key={event._id} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-4 px-4">
-                        <div className="font-medium text-gray-900">{event.eventType.name}</div>
+                        <div className="font-medium text-gray-900">
+                          {event.eventType?.name || "Unknown Event Type"}
+                        </div>
                       </td>
                       <td className="py-4 px-4">
-                        <div className="text-gray-900">{event.vendor.name}</div>
-                        <div className="text-sm text-gray-500">{event.vendor.email}</div>
+                        <div className="text-gray-900">
+                          {event.vendor?.name || "Unknown Vendor"}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {event.vendor?.email || "No email"}
+                        </div>
                       </td>
                       <td className="py-4 px-4">
                         {event.confirmedDate ? (
@@ -200,6 +221,13 @@ export function HRDashboard() {
               <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No events found</h3>
               <p className="text-gray-600">No wellness events have been created yet.</p>
+              <Button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="mt-4 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Your First Event
+              </Button>
             </div>
           )}
         </CardContent>
@@ -207,6 +235,9 @@ export function HRDashboard() {
 
       {/* Event Detail Modal */}
       <EventDetailModal event={selectedEvent} isOpen={isModalOpen} onClose={handleCloseModal} />
+
+      {/* Create Event Modal */}
+      <CreateEventModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} />
     </div>
   );
 }

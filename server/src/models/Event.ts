@@ -58,4 +58,8 @@ const WellnessEventSchema = new Schema<IWellnessEvent>(
   { timestamps: true }
 );
 
-export default mongoose.model<IWellnessEvent>("WellnessEvent", WellnessEventSchema);
+export default mongoose.model<IWellnessEvent>(
+  "WellnessEvent",
+  WellnessEventSchema,
+  "wellnessevents"
+);
