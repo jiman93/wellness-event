@@ -1,81 +1,47 @@
 import express from "express";
-import cors from "cors";
 import helmet from "helmet";
-import morgan from "morgan";
 import rateLimit from "express-rate-limit";
+import cors from "cors";
+import morgan from "morgan";
 import dotenv from "dotenv";
 import { connectDB } from "./config/database";
-import eventRoutes from "./routes/events";
-import { notFound, errorHandler } from "./middleware/errorHandler";
+import authRoutes from "./routes/auth";
+import eventTypeRoutes from "./routes/eventTypes";
+import wellnessEventRoutes from "./routes/wellnessEvents";
+import { errorHandler, notFound } from "./middleware/errorHandler";
 
-// Load environment variables
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-// Connect to MongoDB
-connectDB();
-
-// Security middleware
+// Middleware
 app.use(helmet());
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: "Too many requests from this IP, please try again later.",
-});
-app.use("/api/", limiter);
-
-// CORS
 app.use(
-  cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
-    credentials: true,
+  rateLimit({
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || "60000"),
+    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || "100"),
   })
 );
+app.use(cors());
+app.use(morgan("dev"));
+app.use(express.json());
 
-// Body parser
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true }));
+// Health check
+app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
-// Logging middleware
-if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
-}
+// Routes
+app.use("/auth", authRoutes);
+app.use("/event-types", eventTypeRoutes);
+app.use("/wellness-events", wellnessEventRoutes);
 
-// Health check endpoint
-app.get("/health", (_req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Wellness Event API is running",
-    timestamp: new Date().toISOString(),
-  });
-});
-
-// API routes
-app.use("/api/events", eventRoutes);
-
-// 404 handler
+// Error handlers
 app.use(notFound);
-
-// Error handler
 app.use(errorHandler);
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
-});
-
-// Graceful shutdown
-process.on("SIGTERM", () => {
-  console.log("SIGTERM received, shutting down gracefully");
-  process.exit(0);
-});
-
-process.on("SIGINT", () => {
-  console.log("SIGINT received, shutting down gracefully");
-  process.exit(0);
+// Connect DB and start server
+const PORT = process.env.PORT || 5000;
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 });
