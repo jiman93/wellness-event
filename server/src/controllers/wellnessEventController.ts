@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { AuthRequest } from "../middleware/authMiddleware";
 import WellnessEvent from "../models/Event";
 import mongoose from "mongoose";
+import User from "../models/User"; // Added import for User model
 
 // POST /wellness-events
 export const createWellnessEvent = async (req: AuthRequest, res: Response) => {
@@ -29,11 +30,26 @@ export const getWellnessEvents = async (req: AuthRequest, res: Response) => {
   const userId = req.user?.userId;
   const role = req.user?.role;
   let filter: any = {};
+
   if (role === "hr") {
-    filter.hr = userId;
+    // For HR users, get all events for their company
+    // First, get the HR user's company name
+    const hrUser = await User.findById(userId).select("companyName");
+    if (hrUser?.companyName) {
+      // Find all HR users in the same company and get their events
+      const hrUsersInCompany = await User.find({
+        role: "hr",
+        companyName: hrUser.companyName,
+      }).select("_id");
+
+      const hrUserIds = hrUsersInCompany.map((user) => user._id);
+      filter.hr = { $in: hrUserIds };
+    }
   } else if (role === "vendor") {
+    // For vendors, show only their events
     filter.vendor = userId;
   }
+
   const events = await WellnessEvent.find(filter)
     .populate("hr", "name email companyName")
     .populate("vendor", "name email")

@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Eye, Calendar, Clock } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { EventDetailModal } from "./EventDetailModal";
 
 interface WellnessEvent {
   _id: string;
@@ -13,15 +15,26 @@ interface WellnessEvent {
     name: string;
     email: string;
   };
+  hr: {
+    name: string;
+    email: string;
+    companyName: string;
+  };
   proposedDates: string[];
   confirmedDate?: string;
   status: "Pending" | "Approved" | "Rejected";
   createdAt: string;
   remarks?: string;
+  proposedLocation: {
+    postalCode: string;
+    street: string;
+  };
 }
 
 export function HRDashboard() {
   const { user } = useAuth();
+  const [selectedEvent, setSelectedEvent] = useState<WellnessEvent | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {
     data: events,
@@ -66,6 +79,16 @@ export function HRDashboard() {
       default:
         return "bg-gray-100 text-gray-800";
     }
+  };
+
+  const handleViewEvent = (event: WellnessEvent) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedEvent(null);
   };
 
   if (isLoading) {
@@ -160,6 +183,7 @@ export function HRDashboard() {
                         <Button
                           size="sm"
                           variant="outline"
+                          onClick={() => handleViewEvent(event)}
                           className="flex items-center gap-1 text-sky-600 hover:text-sky-700 hover:bg-sky-50"
                         >
                           <Eye className="w-4 h-4" />
@@ -180,6 +204,9 @@ export function HRDashboard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Event Detail Modal */}
+      <EventDetailModal event={selectedEvent} isOpen={isModalOpen} onClose={handleCloseModal} />
     </div>
   );
 }

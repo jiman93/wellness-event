@@ -1,8 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Eye, Calendar, Clock, Building } from "lucide-react";
-import { useAuth } from "../contexts/AuthContext";
+import { EventDetailModal } from "./EventDetailModal";
 
 interface WellnessEvent {
   _id: string;
@@ -14,15 +15,25 @@ interface WellnessEvent {
     email: string;
     companyName: string;
   };
+  vendor: {
+    name: string;
+    email: string;
+  };
   proposedDates: string[];
   confirmedDate?: string;
   status: "Pending" | "Approved" | "Rejected";
   createdAt: string;
   remarks?: string;
+  proposedLocation: {
+    postalCode: string;
+    street: string;
+  };
 }
 
 export function VendorDashboard() {
-  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [selectedEvent, setSelectedEvent] = useState<WellnessEvent | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {
     data: events,
@@ -41,6 +52,54 @@ export function VendorDashboard() {
       if (!res.ok) throw new Error("Failed to fetch wellness events");
       const json = await res.json();
       return json.data;
+    },
+  });
+
+  // Approve event mutation
+  const approveMutation = useMutation({
+    mutationFn: async ({ eventId, confirmedDate }: { eventId: string; confirmedDate: string }) => {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`/wellness-events/${eventId}/approve`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ confirmedDate }),
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to approve event");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["wellness-events"] });
+      handleCloseModal();
+    },
+  });
+
+  // Reject event mutation
+  const rejectMutation = useMutation({
+    mutationFn: async ({ eventId, remarks }: { eventId: string; remarks: string }) => {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`/wellness-events/${eventId}/reject`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ remarks }),
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to reject event");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["wellness-events"] });
+      handleCloseModal();
     },
   });
 
@@ -67,6 +126,24 @@ export function VendorDashboard() {
       default:
         return "bg-gray-100 text-gray-800";
     }
+  };
+
+  const handleViewEvent = (event: WellnessEvent) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedEvent(null);
+  };
+
+  const handleApprove = (eventId: string, confirmedDate: string) => {
+    approveMutation.mutate({ eventId, confirmedDate });
+  };
+
+  const handleReject = (eventId: string, remarks: string) => {
+    rejectMutation.mutate({ eventId, remarks });
   };
 
   if (isLoading) {
@@ -165,6 +242,7 @@ export function VendorDashboard() {
                         <Button
                           size="sm"
                           variant="outline"
+                          onClick={() => handleViewEvent(event)}
                           className="flex items-center gap-1 text-sky-600 hover:text-sky-700 hover:bg-sky-50"
                         >
                           <Eye className="w-4 h-4" />
@@ -185,6 +263,16 @@ export function VendorDashboard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Event Detail Modal */}
+      <EventDetailModal
+        event={selectedEvent}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onApprove={handleApprove}
+        onReject={handleReject}
+        isLoading={approveMutation.isPending || rejectMutation.isPending}
+      />
     </div>
   );
 }
