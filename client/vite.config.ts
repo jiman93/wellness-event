@@ -13,5 +13,23 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true,
+    proxy: {
+      "/auth": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+      },
+      "/wellness-events": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+      },
+      "/event-types": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+      },
+      "/vendors": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+      },
+    },
   },
 });
