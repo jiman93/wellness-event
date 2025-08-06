@@ -2,7 +2,7 @@
 const isDevelopment = import.meta.env.DEV;
 
 export const API_BASE_URL = isDevelopment
-  ? "http://localhost:5000"
+  ? "" // Use relative URLs in development (proxied by Vite)
   : "https://wellness-event-api.fly.dev";
 
 export const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
