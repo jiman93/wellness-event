@@ -3,7 +3,7 @@ app = "wellness-event-platform"
 primary_region = "iad"
 
 [build]
-dockerfile = "Dockerfile.client"
+dockerfile = "infra/Dockerfile.client"
 
 [env]
 NODE_ENV = "production"
