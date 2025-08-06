@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { LoginPage } from "./components/LoginPage";
 import { HRDashboard } from "./components/HRDashboard";
 import { VendorDashboard } from "./components/VendorDashboard";
@@ -83,10 +84,22 @@ function AppRoutes() {
 }
 
 function App() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 0, // Data is considered stale immediately
+        refetchOnMount: true, // Always refetch when component mounts
+        refetchOnWindowFocus: true, // Refetch when window regains focus
+      },
+    },
+  });
+
   return (
-    <AuthProvider>
-      <AppRoutes />
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { X, Plus } from "lucide-react";
 import { Button } from "./ui/button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "../config/api";
 
 interface EventType {
   _id: string;
@@ -36,41 +37,36 @@ export function CreateEventModal({ isOpen, onClose }: CreateEventModalProps) {
   const { data: eventTypes, isLoading: loadingEventTypes } = useQuery({
     queryKey: ["event-types"],
     queryFn: async () => {
-      const res = await fetch("/event-types");
-      if (!res.ok) throw new Error("Failed to fetch event types");
-      const json = await res.json();
-      return json.data;
+      const data = await apiRequest("/event-types");
+      return data.data;
     },
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   // Fetch vendors
   const { data: vendors, isLoading: loadingVendors } = useQuery({
     queryKey: ["vendors"],
     queryFn: async () => {
-      const res = await fetch("/vendors");
-      if (!res.ok) throw new Error("Failed to fetch vendors");
-      const json = await res.json();
-      return json.data;
+      const data = await apiRequest("/vendors");
+      return data.data;
     },
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   // Create event mutation
   const createEventMutation = useMutation({
     mutationFn: async (eventData: any) => {
       const token = localStorage.getItem("token");
-      const res = await fetch("/wellness-events", {
+      const data = await apiRequest("/wellness-events", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(eventData),
       });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Failed to create event");
-      }
-      return res.json();
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wellness-events"] });

@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Eye, Calendar, Clock, Building } from "lucide-react";
 import { EventDetailModal } from "./EventDetailModal";
+import { apiRequest } from "../config/api";
 
 interface WellnessEvent {
   _id: string;
@@ -44,34 +45,30 @@ export function VendorDashboard() {
     queryKey: ["wellness-events"],
     queryFn: async () => {
       const token = localStorage.getItem("token");
-      const res = await fetch("/wellness-events", {
+      const data = await apiRequest("/wellness-events", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!res.ok) throw new Error("Failed to fetch wellness events");
-      const json = await res.json();
-      return json.data;
+      return data.data;
     },
+    staleTime: 0, // Data is considered stale immediately
+    refetchOnMount: true, // Always refetch when component mounts
+    refetchOnWindowFocus: true, // Refetch when window regains focus
   });
 
   // Approve event mutation
   const approveMutation = useMutation({
     mutationFn: async ({ eventId, confirmedDate }: { eventId: string; confirmedDate: string }) => {
       const token = localStorage.getItem("token");
-      const res = await fetch(`/wellness-events/${eventId}/approve`, {
+      const data = await apiRequest(`/wellness-events/${eventId}/approve`, {
         method: "PATCH",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ confirmedDate }),
       });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Failed to approve event");
-      }
-      return res.json();
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wellness-events"] });
@@ -83,19 +80,14 @@ export function VendorDashboard() {
   const rejectMutation = useMutation({
     mutationFn: async ({ eventId, remarks }: { eventId: string; remarks: string }) => {
       const token = localStorage.getItem("token");
-      const res = await fetch(`/wellness-events/${eventId}/reject`, {
+      const data = await apiRequest(`/wellness-events/${eventId}/reject`, {
         method: "PATCH",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ remarks }),
       });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Failed to reject event");
-      }
-      return res.json();
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wellness-events"] });

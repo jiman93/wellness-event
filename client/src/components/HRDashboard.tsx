@@ -6,6 +6,7 @@ import { Eye, Calendar, Clock, Plus } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { EventDetailModal } from "./EventDetailModal";
 import { CreateEventModal } from "./CreateEventModal";
+import { apiRequest } from "../config/api";
 
 interface WellnessEvent {
   _id: string;
@@ -47,15 +48,16 @@ export function HRDashboard() {
     queryKey: ["wellness-events"],
     queryFn: async () => {
       const token = localStorage.getItem("token");
-      const res = await fetch("/wellness-events", {
+      const data = await apiRequest("/wellness-events", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!res.ok) throw new Error("Failed to fetch wellness events");
-      const json = await res.json();
-      return json.data;
+      return data.data;
     },
+    staleTime: 0, // Data is considered stale immediately
+    refetchOnMount: true, // Always refetch when component mounts
+    refetchOnWindowFocus: true, // Refetch when window regains focus
   });
 
   const formatDate = (dateString: string) => {
