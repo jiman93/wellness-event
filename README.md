@@ -25,7 +25,7 @@ A full-stack wellness event management platform built with React, Express, and M
 - **Docker** for containerization
 - **Docker Compose** for local development
 - **Fly.io** for production deployment
-- **MongoDB** for database
+- **MongoDB Atlas** for cloud database
 - **Nginx** as reverse proxy
 
 ## 📁 Project Structure
@@ -44,6 +44,8 @@ wellness-event/
 │   │   │   └── Header.tsx
 │   │   ├── contexts/      # React contexts
 │   │   │   └── AuthContext.tsx
+│   │   ├── config/        # API configuration
+│   │   │   └── api.ts
 │   │   ├── lib/           # Utilities
 │   │   └── types/         # TypeScript types
 │   ├── package.json
@@ -73,10 +75,15 @@ wellness-event/
 │   ├── Dockerfile.client  # Client Dockerfile
 │   ├── Dockerfile.server  # Server Dockerfile
 │   ├── docker-compose.yml # Local development
-│   ├── fly.toml          # Fly.io deployment
 │   ├── nginx.conf        # Nginx configuration
 │   └── mongo-init.js     # MongoDB initialization script
-├── package.json           # Root package.json
+├── scripts/               # Utility scripts
+│   └── seed-atlas.js     # MongoDB Atlas seeding script
+├── fly.toml              # Fly.io client configuration
+├── fly.server.toml       # Fly.io server configuration
+├── deploy.sh             # Automated deployment script
+├── deploy-backend.sh     # Backend deployment script
+├── package.json          # Root package.json
 └── tsconfig.base.json    # Shared TypeScript config
 ```
 
@@ -134,6 +141,13 @@ The platform supports two user roles:
 - **Error Handling**: Graceful error display
 - **Form Validation**: Client-side validation with error messages
 
+## 🌐 Live Application
+
+The application is currently deployed and live:
+
+- **Frontend**: https://wellness-event.fly.dev/
+- **Backend API**: https://wellness-event-api.fly.dev/
+
 ## 🔐 Security Setup
 
 **⚠️ IMPORTANT: Before pushing to GitHub, set up your environment variables!**
@@ -179,7 +193,7 @@ fly secrets set JWT_SECRET="your-super-secret-jwt-key"
 fly secrets set CLIENT_URL="https://your-app.fly.dev"
 ```
 
-### 2. Environment Variables
+### 3. Environment Variables
 
 **Server (.env):**
 ```bash
@@ -353,58 +367,54 @@ npm run build --workspace=server
    fly auth login
    ```
 
-3. **Create the app**
+3. **Create the apps**
    ```bash
-   fly apps create wellness-event-platform
+   fly apps create wellness-event
+   fly apps create wellness-event-api
    ```
 
-4. **Create MongoDB volume**
+4. **Deploy the backend**
    ```bash
-   fly volumes create wellness_mongo_data --size 3 --region iad
+   fly deploy -a wellness-event-api -c fly.server.toml
    ```
 
-5. **Set up environment variables**
+5. **Deploy the frontend**
    ```bash
-   # Set production secrets
-   fly secrets set NODE_ENV=production
-   fly secrets set MONGODB_URI="your-production-mongodb-uri"
-   fly secrets set JWT_SECRET="your-super-secret-jwt-key"
-   fly secrets set CLIENT_URL="https://wellness-event-platform.fly.dev"
+   fly deploy -a wellness-event
    ```
 
-6. **Deploy**
-   ```bash
-   cd infra
-   fly deploy
-   ```
+### 🗄️ Database Setup
 
-### 🗄️ Database Options
-
-#### Option A: Use Fly.io MongoDB (Simple)
-The deployment script will create a MongoDB volume on Fly.io for you. This is perfect for development and small to medium applications.
-
-#### Option B: Use MongoDB Atlas (Recommended for Production)
-For production applications, consider using MongoDB Atlas:
+#### MongoDB Atlas (Recommended for Production)
 
 1. **Create a MongoDB Atlas cluster**
    - Go to [MongoDB Atlas](https://www.mongodb.com/atlas)
    - Create a free cluster
    - Get your connection string
 
-2. **Set the MongoDB URI**
+2. **Seed the database**
    ```bash
-   fly secrets set MONGODB_URI="mongodb+srv://username:password@cluster.mongodb.net/wellness-events?retryWrites=true&w=majority"
+   # Install dependencies
+   npm install bcrypt mongoose
+   
+   # Run the seeding script
+   node scripts/seed-atlas.js
+   ```
+
+3. **Set the MongoDB URI**
+   ```bash
+   fly secrets set MONGODB_URI="mongodb+srv://username:password@cluster.mongodb.net/wellness-events?retryWrites=true&w=majority" -a wellness-event-api
    ```
 
 ### 📊 Post-Deployment
 
 After deployment, you can:
 
-- **View your app**: https://wellness-event-platform.fly.dev
-- **Monitor logs**: `fly logs -a wellness-event-platform`
-- **Check status**: `fly status -a wellness-event-platform`
-- **Scale up**: `fly scale count 2 -a wellness-event-platform`
-- **SSH into app**: `fly ssh console -a wellness-event-platform`
+- **View your app**: https://wellness-event.fly.dev
+- **Monitor logs**: `fly logs -a wellness-event`
+- **Check status**: `fly status -a wellness-event`
+- **Scale up**: `fly scale count 2 -a wellness-event`
+- **SSH into app**: `fly ssh console -a wellness-event`
 
 ## 🔧 Development Scripts
 
