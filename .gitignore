@@ -92,4 +92,7 @@ jspm_packages/
 data/
 
 # Local environment files
-infra/.env 
+infra/.env
+
+# Scripts that may contain secrets
+scripts/seed-atlas.js 
